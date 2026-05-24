@@ -27,11 +27,12 @@ export default function MeetingRoom() {
   const localStreamRef = useRef(null);    // original camera stream — peers were created with this
   const currentStreamRef = useRef(null);
   const screenStreamRef = useRef(null);
+  const isScreenSharingRef = useRef(false);
   const sentVideoTrackRef = useRef(null); // the track currently being sent to peers via RTP
 
   // Utility to get the stream that should be sent to peers (screen if sharing, else camera)
   const getCurrentSendingStream = () => {
-    if (isScreenSharing && screenStreamRef.current) return screenStreamRef.current;
+    if (isScreenSharingRef.current && screenStreamRef.current) return screenStreamRef.current;
     if (localStreamRef.current) return localStreamRef.current;
     if (currentStreamRef.current) return currentStreamRef.current;
     return new MediaStream();
@@ -50,6 +51,11 @@ export default function MeetingRoom() {
   useEffect(() => {
     currentStreamRef.current = stream;
   }, [stream]);
+
+  // Keep a mutable ref in sync so long-lived socket handlers always see the latest state.
+  useEffect(() => {
+    isScreenSharingRef.current = isScreenSharing;
+  }, [isScreenSharing]);
   const [isRecording, setIsRecording] = useState(false);
   const mediaRecorderRef = useRef(null);
   const recordedChunksRef = useRef([]);
@@ -276,6 +282,7 @@ export default function MeetingRoom() {
 
     if (isScreenSharing) {
       // ── STOP sharing ──────────────────────────────────────────
+      isScreenSharingRef.current = false;
       if (screenStreamRef.current) {
         screenStreamRef.current.getTracks().forEach(t => t.stop());
         screenStreamRef.current = null;
@@ -314,6 +321,7 @@ export default function MeetingRoom() {
         const oldTrack = sentVideoTrackRef.current; // currently sending camera track
         const peerStream = localStreamRef.current;  // stream peers were created with
         screenStreamRef.current = screenStream;
+        isScreenSharingRef.current = true;
 
         // Replace track on every peer — NO removeTrack/addTrack on the stream!
         Object.values(peersRef.current).forEach(({ peer }) => {
@@ -358,6 +366,7 @@ export default function MeetingRoom() {
             sentVideoTrackRef.current = restoredTrack;
             setStream(cameraStream);
             setIsScreenSharing(false);
+            isScreenSharingRef.current = false;
             socket.emit('host-screen-share', { meetingId, isSharing: false });
           } catch (err) {
             console.error('Failed to restore camera on screen share end:', err);
