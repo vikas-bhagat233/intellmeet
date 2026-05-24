@@ -1,7 +1,7 @@
 services:
   - type: web
     name: intellmeet
-    env: node
+    runtime: node
     plan: free
     buildCommand: |
       # build client, then install server deps
