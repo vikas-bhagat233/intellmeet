@@ -55,3 +55,13 @@ app.get('/health', (req, res) => {
 app.use(errorMiddleware)
 
 export default app
+
+// Serve client in production when built into ../client/dist
+if (process.env.NODE_ENV === 'production') {
+  import path from 'path'
+  const clientDist = path.join(process.cwd(), 'client', 'dist')
+  app.use(express.static(clientDist))
+  app.get('*', (req, res) => {
+    res.sendFile(path.join(clientDist, 'index.html'))
+  })
+}
