@@ -10,7 +10,9 @@ export const SocketProvider = ({ children }) => {
 
   useEffect(() => {
     if (user) {
-      const newSocket = io(import.meta.env.VITE_SOCKET_URL || 'http://localhost:5001')
+      // If VITE_SOCKET_URL is set at build time use it; otherwise connect to same origin
+      const socketUrl = import.meta.env.VITE_SOCKET_URL || undefined
+      const newSocket = io(socketUrl)
       setSocket(newSocket)
       return () => newSocket.close()
     }
