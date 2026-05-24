@@ -1,4 +1,5 @@
 import express from 'express'
+import path from 'path'
 import cors from 'cors'
 import dotenv from 'dotenv'
 import connectDB from './config/db.js'
@@ -58,7 +59,6 @@ export default app
 
 // Serve client in production when built into ../client/dist
 if (process.env.NODE_ENV === 'production') {
-  import path from 'path'
   const clientDist = path.join(process.cwd(), 'client', 'dist')
   app.use(express.static(clientDist))
   app.get('*', (req, res) => {
