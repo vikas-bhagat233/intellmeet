@@ -1,6 +1,7 @@
 import express from 'express'
 import path from 'path'
 import cors from 'cors'
+import fs from 'fs'
 import dotenv from 'dotenv'
 import connectDB from './config/db.js'
 import authRoutes from './routes/authRoutes.js'
@@ -59,9 +60,21 @@ export default app
 
 // Serve client in production when built into ../client/dist
 if (process.env.NODE_ENV === 'production') {
-  const clientDist = path.join(process.cwd(), 'client', 'dist')
-  app.use(express.static(clientDist))
-  app.get('*', (req, res) => {
-    res.sendFile(path.join(clientDist, 'index.html'))
-  })
+  const possiblePaths = [
+    path.join(process.cwd(), 'client', 'dist'),
+    path.join(process.cwd(), '..', 'client', 'dist'),
+    path.join(process.cwd(), 'server', 'client', 'dist'),
+    path.join(process.cwd(), '..', '..', 'client', 'dist')
+  ]
+
+  const clientDist = possiblePaths.find(p => fs.existsSync(p))
+
+  if (clientDist) {
+    app.use(express.static(clientDist))
+    app.get('*', (req, res) => {
+      res.sendFile(path.join(clientDist, 'index.html'))
+    })
+  } else {
+    console.warn('Client dist folder not found. Checked:', possiblePaths)
+  }
 }
