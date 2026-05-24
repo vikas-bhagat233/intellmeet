@@ -1,0 +1,16 @@
+services:
+  - type: web
+    name: intellmeet-server
+    env: node
+    plan: free
+    buildCommand: |
+      # build client first, then install server deps
+      cd client && npm ci && npm run build
+      cd ../server && npm ci
+    startCommand: "npm --prefix server start"
+
+  - type: static
+    name: intellmeet-client
+    plan: free
+    buildCommand: "cd client && npm ci && npm run build"
+    publishPath: client/dist

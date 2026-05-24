@@ -1,0 +1,50 @@
+/*
+ * theme.css – Design tokens + small utilities.
+ *
+ * IMPORTANT:
+ * - Keep this file focused on CSS variables and reusable helpers.
+ * - Avoid redefining global element styles (body, *, button, etc.)
+ *   because `index.css` already defines the global UI system.
+ */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+:root {
+  /* Base colors */
+  --color-bg-primary: #0f172a;        /* Dark slate */
+  --color-bg-glass: rgba(15, 23, 42, 0.45);
+  --color-bg-glass-light: rgba(15, 23, 42, 0.35);
+  --color-text-primary: #e2e8f0;      /* Light gray */
+  --color-text-muted: #94a3b8;        /* Muted gray */
+  --color-accent-primary: #3b82f6;    /* Blue 500 */
+  --color-accent-secondary: #fbbf24;  /* Amber 400 */
+  --color-accent-success: #10b981;    /* Green 500 */
+  --color-accent-danger: #ef4444;     /* Red 500 */
+
+  /* Gradients */
+  --gradient-blue: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+  --gradient-amber: linear-gradient(135deg, #fbbf24 0%, #d97706 100%);
+  --gradient-emerald: linear-gradient(135deg, #10b981 0%, #047857 100%);
+  --gradient-purple: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%);
+
+  /* Font */
+  --font-family-base: 'Inter', sans-serif;
+
+  /* Transition utilities */
+  --transition-fast: all 0.2s ease;
+  --transition-medium: all 0.3s ease;
+}
+
+/* Glass‑morphism helper class */
+.glass {
+  background: var(--color-bg-glass);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 12px;
+}
+
+/* Utility classes for flex centering */
+.flex-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
