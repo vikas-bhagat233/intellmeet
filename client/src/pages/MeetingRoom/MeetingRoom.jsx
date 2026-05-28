@@ -1,5 +1,4 @@
 import { useEffect, useRef, useState } from 'react';
-import ChatSection from '../../pages/MeetingRoom/ChatSection';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useSocket } from '../../hooks/useSocket';
 import { useAuth } from '../../hooks/useAuth';
@@ -731,9 +730,6 @@ export default function MeetingRoom() {
             </div>
             <div style={{ marginTop: 20 }}>
               <MeetingAI meetingId={meetingId} />
-            </div>
-            <div style={{ marginTop: 20 }}>
-              <ChatSection meetingId={meetingId} />
             </div>
         </div>
       </div>
