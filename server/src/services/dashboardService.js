@@ -2,17 +2,17 @@ import MeetingHistory from '../models/MeetingHistory.js'
 import Meeting from '../models/Meeting.js'
 
 export const dashboardService = {
-  getStats: async (userId) => {
+  getStats: async (userId, userName) => {
     // Fetch all completed meetings where user was host or participant
     const completed = await MeetingHistory.find({
-      $or: [{ hostId: userId }, { participants: { $in: [userId] } }]
-    })
+      $or: [{ hostId: userId }, { participants: { $in: [userName] } }]
+    }).sort('-startTime')
 
     // Fetch all active/upcoming scheduled meetings
     const upcoming = await Meeting.find({
-      $or: [{ hostId: userId }, { participants: { $in: [userId] } }],
+      $or: [{ host: userId }, { participants: { $in: [userId] } }],
       status: 'scheduled'
-    })
+    }).sort('-createdAt')
 
     const totalMeetings = completed.length
     const totalDuration = completed.reduce((acc, curr) => acc + (curr.duration || 0), 0)
