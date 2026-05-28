@@ -20,8 +20,8 @@ export default function MeetingRoom() {
 
   const [stream, setStream] = useState(null);
   const [peers, setPeers] = useState([]);
-  const [isMuted, setIsMuted] = useState(false);
-  const [isVideoOff, setIsVideoOff] = useState(false);
+  const [isMuted, setIsMuted] = useState(true); // default OFF
+  const [isVideoOff, setIsVideoOff] = useState(true); // default OFF
   const peersRef = useRef({});
   const handlersRef = useRef(null);
   const localStreamRef = useRef(null);    // original camera stream — peers were created with this
@@ -162,6 +162,12 @@ export default function MeetingRoom() {
         }
       }
 
+      // By default, disable camera and mic tracks to join muted and with video off
+      if (localStream) {
+        localStream.getAudioTracks().forEach(t => t.enabled = false);
+        localStream.getVideoTracks().forEach(t => t.enabled = false);
+      }
+
       setStream(localStream);
       localStreamRef.current = localStream;
       currentStreamRef.current = localStream;
@@ -244,14 +250,78 @@ export default function MeetingRoom() {
         setPeers(prev => prev.filter(p => p.userId !== targetId && p.userId !== userId));
       };
 
+      const onRequestUnmute = ({ requesterName }) => {
+        toast((t) => (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10, padding: '4px' }}>
+            <span style={{ fontWeight: 700, color: '#fff', fontSize: 14, display: 'flex', alignItems: 'center', gap: 6 }}>
+              🎙️ Host Unmute Request
+            </span>
+            <span style={{ fontSize: 13, color: 'var(--muted)' }}>
+              Host <strong>{requesterName}</strong> is asking you to unmute your microphone.
+            </span>
+            <div style={{ display: 'flex', gap: 8, marginTop: 4 }}>
+              <button
+                onClick={() => {
+                  if (localStreamRef.current && localStreamRef.current.getAudioTracks().length > 0) {
+                    localStreamRef.current.getAudioTracks()[0].enabled = true;
+                  }
+                  setIsMuted(false);
+                  toast.success('Microphone unmuted! 🎤', { id: t.id });
+                }}
+                style={{
+                  background: 'var(--accent-gradient)',
+                  color: '#fff',
+                  border: 'none',
+                  padding: '6px 14px',
+                  borderRadius: 8,
+                  fontSize: 12,
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  boxShadow: '0 4px 12px var(--accent-glow)'
+                }}
+              >
+                Unmute 🎤
+              </button>
+              <button
+                onClick={() => toast.dismiss(t.id)}
+                style={{
+                  background: 'rgba(255,255,255,0.06)',
+                  color: '#fff',
+                  border: '1px solid rgba(255,255,255,0.1)',
+                  padding: '6px 12px',
+                  borderRadius: 8,
+                  fontSize: 12,
+                  fontWeight: 600,
+                  cursor: 'pointer'
+                }}
+              >
+                Keep Muted
+              </button>
+            </div>
+          </div>
+        ), {
+          duration: 12000,
+          style: {
+            background: 'var(--bg-card)',
+            backdropFilter: 'blur(20px)',
+            WebkitBackdropFilter: 'blur(20px)',
+            border: '1px solid rgba(255,255,255,0.1)',
+            borderRadius: '16px',
+            color: '#fff',
+            boxShadow: '0 20px 40px rgba(0,0,0,0.5)'
+          }
+        });
+      };
+
       socket.on('host-screen-share', onHostScreenShare);
       socket.on('user-joined', onUserJoined);
       socket.on('receiving-signal', onReceivingSignal);
       socket.on('received-returned-signal', onReturnedSignal);
       socket.on('user-left', onUserLeft);
+      socket.on('request-unmute', onRequestUnmute);
 
       // Store handlers in ref so cleanup can remove EXACTLY these handlers
-      handlersRef.current = { onHostScreenShare, onUserJoined, onReceivingSignal, onReturnedSignal, onUserLeft };
+      handlersRef.current = { onHostScreenShare, onUserJoined, onReceivingSignal, onReturnedSignal, onUserLeft, onRequestUnmute };
     };
 
     initMeetingMedia();
@@ -267,6 +337,7 @@ export default function MeetingRoom() {
         socket.off('receiving-signal', h.onReceivingSignal);
         socket.off('received-returned-signal', h.onReturnedSignal);
         socket.off('user-left', h.onUserLeft);
+        socket.off('request-unmute', h.onRequestUnmute);
       }
       Object.values(peersRef.current).forEach(({ peer }) => { try { peer.destroy(); } catch (e) {} });
       peersRef.current = {};
@@ -535,6 +606,20 @@ export default function MeetingRoom() {
     await saveHistoryAndLeave();
   };
 
+  // Send unmute request to target participant socket
+  const handleRequestUnmute = (targetParticipant) => {
+    if (!isHost) return;
+    if (targetParticipant.userId === socket.id) {
+      toast.error('You cannot request yourself to unmute!');
+      return;
+    }
+    socket.emit('request-unmute', {
+      targetSocketId: targetParticipant.userId, // peer's socket ID
+      requesterName: user?.name || 'Host'
+    });
+    toast.success(`Sent microphone unmute request to ${targetParticipant.username}! 🎙️`);
+  };
+
   // Improved participant list logic: always show all unique users
   const uniqueParticipants = [];
   const seenKeys = new Set();
@@ -640,7 +725,7 @@ export default function MeetingRoom() {
           ))}
         </div>
         <div>
-          <ParticipantList participants={uniqueParticipants} />
+          <ParticipantList participants={uniqueParticipants} isHost={isHost} onRequestUnmute={handleRequestUnmute} />
             <div style={{ marginTop: 20 }}>
               <CollaborationDashboard meetingId={meetingId} participants={uniqueParticipants} />
             </div>

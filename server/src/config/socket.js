@@ -46,6 +46,11 @@ export const initSocket = (server) => {
       socket.to(meetingId).emit('host-screen-share', { isSharing })
     })
 
+    // Relay direct unmute requests to specific participant socket
+    socket.on('request-unmute', ({ targetSocketId, requesterName }) => {
+      io.to(targetSocketId).emit('request-unmute', { requesterName })
+    })
+
     socket.on('leave-meeting', ({ meetingId, userId }) => {
       socket.leave(meetingId)
       socket.to(meetingId).emit('user-left', { userId, socketId: socket.id })
