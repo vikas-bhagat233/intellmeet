@@ -90,6 +90,7 @@ export default function VideoPlayer({
     track.label.toLowerCase().includes('display')
   )
   const isScreen = isScreenShare || hasScreenTrack
+  const showCameraDisabled = isVideoOff && !isScreen
 
   return (
     <div
@@ -105,16 +106,24 @@ export default function VideoPlayer({
       onMouseMove={handleMouseMove}
       onMouseLeave={() => setShowControls(false)}
     >
-      {/* Video stream rendering off if camera disabled */}
-      {!isVideoOff ? (
-        <video
-          ref={videoRef}
-          autoPlay
-          playsInline
-          muted={muted}
-          style={isFullscreen ? { width: '100%', height: '100%', objectFit: 'contain' } : {}}
-        />
-      ) : (
+      {/* Video stream rendering: always mounted so it never loses track assignment */}
+      <video
+        ref={videoRef}
+        autoPlay
+        playsInline
+        muted={muted}
+        style={isFullscreen ? { 
+          width: '100%', 
+          height: '100%', 
+          objectFit: 'contain',
+          display: showCameraDisabled ? 'none' : 'block'
+        } : {
+          display: showCameraDisabled ? 'none' : 'block'
+        }}
+      />
+
+      {/* Show beautiful placeholder overlay if camera disabled and not screen sharing */}
+      {showCameraDisabled && (
         <div style={{
           position: 'absolute',
           inset: 0,

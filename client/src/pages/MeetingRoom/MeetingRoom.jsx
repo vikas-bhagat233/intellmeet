@@ -29,6 +29,17 @@ export default function MeetingRoom() {
   const isScreenSharingRef = useRef(false);
   const sentVideoTrackRef = useRef(null); // the track currently being sent to peers via RTP
 
+  const isMutedRef = useRef(true);
+  const isVideoOffRef = useRef(true);
+
+  useEffect(() => {
+    isMutedRef.current = isMuted;
+  }, [isMuted]);
+
+  useEffect(() => {
+    isVideoOffRef.current = isVideoOff;
+  }, [isVideoOff]);
+
   // Utility to get the stream that should be sent to peers (screen if sharing, else camera)
   const getCurrentSendingStream = () => {
     if (isScreenSharingRef.current && screenStreamRef.current) return screenStreamRef.current;
@@ -200,6 +211,9 @@ export default function MeetingRoom() {
           const filtered = prev.filter(p => p.userId !== targetId && p.dbUserId !== userId);
           return [...filtered, { peer, userId: targetId, dbUserId: userId, username, stream: null, isHost: false, isMuted: true, isVideoOff: true }];
         });
+
+        // Instantly notify new peer of our actual media states
+        socket.emit('toggle-media', { meetingId, isMuted: isMutedRef.current, isVideoOff: isVideoOffRef.current });
       };
 
       // NEW user: receive offer from existing user → respond
@@ -225,6 +239,9 @@ export default function MeetingRoom() {
           const filtered = prev.filter(p => p.userId !== callerId && p.dbUserId !== callerDbId);
           return [...filtered, { peer, userId: callerId, dbUserId: callerDbId, username, stream: null, isHost: !!peerIsHost, isMuted: true, isVideoOff: true }];
         });
+
+        // Instantly notify initiating peer of our actual media states
+        socket.emit('toggle-media', { meetingId, isMuted: isMutedRef.current, isVideoOff: isVideoOffRef.current });
       };
 
       // Existing user gets answer back from new user
