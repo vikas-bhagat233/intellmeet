@@ -406,7 +406,14 @@ export default function MeetingRoom() {
         sentVideoTrackRef.current = newCameraTrack;
         setStream(cameraStream); // local display shows camera
         setIsScreenSharing(false);
+
+        // Restore previous camera video off state
+        const prevVideoOff = isVideoOffRef.current;
+        newCameraTrack.enabled = !prevVideoOff;
+        setIsVideoOff(prevVideoOff);
+
         socket.emit('host-screen-share', { meetingId, isSharing: false });
+        socket.emit('toggle-media', { meetingId, isMuted, isVideoOff: prevVideoOff });
         toast.success('📷 Camera active!');
       } catch (err) {
         console.error('Failed to restore camera stream:', err);
@@ -435,7 +442,9 @@ export default function MeetingRoom() {
         sentVideoTrackRef.current = screenTrack;
         setStream(screenStream); // local display shows screen
         setIsScreenSharing(true);
+        setIsVideoOff(false); // Mark video off as false (active!) since screen sharing IS video
         socket.emit('host-screen-share', { meetingId, isSharing: true });
+        socket.emit('toggle-media', { meetingId, isMuted, isVideoOff: false }); // Broadcast active video!
         toast.success('🖥️ Screen sharing active!');
 
         // Handle browser-native Stop Sharing button
@@ -465,7 +474,15 @@ export default function MeetingRoom() {
             setStream(cameraStream);
             setIsScreenSharing(false);
             isScreenSharingRef.current = false;
+
+            // Restore previous camera video off state
+            const prevVideoOff = isVideoOffRef.current;
+            restoredTrack.enabled = !prevVideoOff;
+            setIsVideoOff(prevVideoOff);
+
             socket.emit('host-screen-share', { meetingId, isSharing: false });
+            socket.emit('toggle-media', { meetingId, isMuted, isVideoOff: prevVideoOff });
+            toast.success('📷 Camera active!');
           } catch (err) {
             console.error('Failed to restore camera on screen share end:', err);
           }
@@ -790,8 +807,9 @@ export default function MeetingRoom() {
       <MeetingControls
         isMuted={isMuted}
         setIsMuted={(muted) => {
-          if (stream && stream.getAudioTracks().length > 0) {
-            stream.getAudioTracks()[0].enabled = !muted;
+          const micStream = localStreamRef.current || stream;
+          if (micStream && micStream.getAudioTracks().length > 0) {
+            micStream.getAudioTracks()[0].enabled = !muted;
           }
           setIsMuted(muted);
           socket.emit('toggle-media', { meetingId, isMuted: muted, isVideoOff });
@@ -799,12 +817,13 @@ export default function MeetingRoom() {
         isVideoOff={isVideoOff}
         setIsVideoOff={(off) => {
           // Prevent disabling video while a screen share is active – it would break the shared stream
-            if (isScreenSharing) {
-              toast('Video cannot be turned off while screen sharing is active');
-              return;
-            }
-          if (stream && stream.getVideoTracks().length > 0) {
-            stream.getVideoTracks()[0].enabled = !off;
+          if (isScreenSharing) {
+            toast('Video cannot be turned off while screen sharing is active');
+            return;
+          }
+          const camStream = localStreamRef.current || stream;
+          if (camStream && camStream.getVideoTracks().length > 0) {
+            camStream.getVideoTracks()[0].enabled = !off;
           }
           setIsVideoOff(off);
           socket.emit('toggle-media', { meetingId, isMuted, isVideoOff: off });
