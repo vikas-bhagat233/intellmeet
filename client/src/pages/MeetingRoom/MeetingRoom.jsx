@@ -770,7 +770,7 @@ export default function MeetingRoom() {
               username={peer.username}
               // If the host is sharing, mark the host's tile as a screen share
               // so the CSS does not mirror it and the expand button appears
-              isScreenShare={hostScreenSharing && peer.isHost}
+              isScreenShare={hostScreenSharing && getIsUserHost(peer.dbUserId, peer.username)}
               isMuted={peer.isMuted !== undefined ? peer.isMuted : true}
               isVideoOff={peer.isVideoOff !== undefined ? peer.isVideoOff : true}
             />
