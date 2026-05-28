@@ -21,16 +21,25 @@ export const getMeetingHistoryDetails = async (req, res, next) => {
     const details = await MeetingHistory.findOne({ meetingId })
     
     if (!details) {
+      // Find the actual meeting to get the correct host info
+      const meeting = await Meeting.findOne({ meetingId }).populate('host')
+      
+      const hostId = meeting?.host?._id || req.userId
+      const hostName = meeting?.host?.name || req.user?.name || 'Vikas Bhagat'
+      const title = meeting?.title || 'Instant Completed Meeting Room'
+      const startTime = meeting?.startTime || new Date(Date.now() - 3600000)
+      const duration = meeting ? Math.round((Date.now() - meeting.startTime.getTime()) / 60000) : 60
+
       // Auto-simulate a completed meeting record in history if it was just left, to guarantee seamless post-meeting dashboard loads!
       const simulated = await MeetingHistory.create({
         meetingId,
-        title: 'Instant Completed Meeting Room',
-        hostId: req.userId,
-        hostName: req.user?.name || 'Vikas Bhagat',
-        participants: [req.user?.name || 'Vikas Bhagat', 'Guest User'],
-        startTime: new Date(Date.now() - 3600000),
+        title,
+        hostId,
+        hostName,
+        participants: [hostName, 'Guest User'],
+        startTime,
         endTime: new Date(),
-        duration: 60
+        duration
       })
 
       // Set original meeting status to 'ended'
@@ -57,13 +66,21 @@ export const saveMeetingToHistory = async (req, res, next) => {
       return successResponse(res, { history: historyRecord }, 'Meeting history already saved', 200)
     }
 
+    // Find the actual meeting to get the correct host info
+    const meeting = await Meeting.findOne({ meetingId }).populate('host')
+    
+    const hostId = meeting?.host?._id || req.userId
+    const hostName = meeting?.host?.name || req.user?.name || 'Vikas Bhagat'
+    const meetingTitle = title || meeting?.title || 'Completed IntellMeet Session'
+    const meetingStartTime = startTime || meeting?.startTime || new Date(Date.now() - 60000 * (duration || 5))
+
     historyRecord = await MeetingHistory.create({
       meetingId,
-      title: title || 'Completed IntellMeet Session',
-      hostId: req.userId,
-      hostName: req.user?.name || 'Vikas Bhagat',
-      participants: participants || [req.user?.name || 'Vikas Bhagat'],
-      startTime: startTime || new Date(Date.now() - 60000 * (duration || 5)),
+      title: meetingTitle,
+      hostId,
+      hostName,
+      participants: participants || [hostName],
+      startTime: meetingStartTime,
       endTime: endTime || new Date(),
       duration: duration || 5
     })
