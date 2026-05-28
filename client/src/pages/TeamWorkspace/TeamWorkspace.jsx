@@ -128,43 +128,49 @@ export default function TeamWorkspace() {
         </div>
 
         {/* Tab selectors */}
-        <div style={{ display: 'flex', gap: '12px', borderBottom: '1px solid rgba(255,255,255,0.08)', paddingBottom: '12px', marginBottom: '24px' }}>
-          <button
-            onClick={() => setActiveTab('projects')}
-            style={{
-              color: activeTab === 'projects' ? '#fff' : '#64748b',
-              fontWeight: '600',
-              fontSize: '14px',
-              borderBottom: activeTab === 'projects' ? '2px solid var(--color-accent-primary)' : 'none',
-              paddingBottom: '4px'
-            }}
-          >
-            Projects
-          </button>
-          <button
-            onClick={() => setActiveTab('members')}
-            style={{
-              color: activeTab === 'members' ? '#fff' : '#64748b',
-              fontWeight: '600',
-              fontSize: '14px',
-              borderBottom: activeTab === 'members' ? '2px solid var(--color-accent-primary)' : 'none',
-              paddingBottom: '4px'
-            }}
-          >
-            Members
-          </button>
-          <button
-            onClick={() => setActiveTab('settings')}
-            style={{
-              color: activeTab === 'settings' ? '#fff' : '#64748b',
-              fontWeight: '600',
-              fontSize: '14px',
-              borderBottom: activeTab === 'settings' ? '2px solid var(--color-accent-primary)' : 'none',
-              paddingBottom: '4px'
-            }}
-          >
-            Settings
-          </button>
+        <div className="tab-wrapper" style={{ 
+          display: 'flex', 
+          gap: '24px', 
+          borderBottom: '1px solid rgba(255,255,255,0.08)', 
+          paddingBottom: '4px', 
+          marginBottom: '32px' 
+        }}>
+          {['projects', 'members', 'settings'].map((tab) => {
+            const isActive = activeTab === tab;
+            return (
+              <button
+                key={tab}
+                onClick={() => setActiveTab(tab)}
+                style={{
+                  color: isActive ? '#fff' : 'var(--muted)',
+                  fontWeight: '600',
+                  fontSize: '15px',
+                  fontFamily: 'Space Grotesk, sans-serif',
+                  padding: '10px 16px',
+                  borderBottom: isActive ? '3px solid var(--accent)' : '3px solid transparent',
+                  textTransform: 'capitalize',
+                  background: isActive ? 'rgba(99, 102, 241, 0.05)' : 'transparent',
+                  borderRadius: '10px 10px 0 0',
+                  cursor: 'pointer',
+                  transition: 'all 0.25s cubic-bezier(0.16, 1, 0.3, 1)'
+                }}
+                onMouseEnter={e => {
+                  if (!isActive) {
+                    e.currentTarget.style.color = '#fff';
+                    e.currentTarget.style.background = 'rgba(255,255,255,0.02)';
+                  }
+                }}
+                onMouseLeave={e => {
+                  if (!isActive) {
+                    e.currentTarget.style.color = 'var(--muted)';
+                    e.currentTarget.style.background = 'transparent';
+                  }
+                }}
+              >
+                {tab === 'projects' ? '📁 Projects' : tab === 'members' ? '👥 Team Members' : '⚙️ Workspace Settings'}
+              </button>
+            );
+          })}
         </div>
 
         {/* Dynamic content */}

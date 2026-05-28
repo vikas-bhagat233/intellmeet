@@ -66,69 +66,68 @@ export default function Teams() {
         </div>
 
         {showCreate && (
-          <form onSubmit={handleCreateTeam} className="glass" style={{
-            padding: '20px',
-            marginBottom: '24px',
+          <form onSubmit={handleCreateTeam} className="card" style={{
+            padding: '28px',
+            marginBottom: '32px',
             maxWidth: '500px',
             display: 'flex',
             flexDirection: 'column',
-            gap: '12px'
+            gap: '16px',
+            background: 'rgba(10, 15, 30, 0.4)',
+            border: '1px solid rgba(99, 102, 241, 0.2)',
+            boxShadow: '0 20px 45px rgba(0,0,0,0.5), 0 0 15px rgba(99,102,241,0.1)'
           }}>
-            <h3 style={{ color: '#fff', fontSize: '16px', margin: 0, fontFamily: 'Space Grotesk' }}>
-              Create New Team
+            <h3 style={{ color: '#fff', fontSize: '18px', margin: 0, fontFamily: 'Space Grotesk', fontWeight: 700 }}>
+              🚀 Create New Workspace
             </h3>
-            <div>
-              <label style={{ color: '#94a3b8', fontSize: '12px', display: 'block', marginBottom: '4px' }}>Team Name</label>
+            
+            <div className="field">
+              <label className="field__label">Workspace Name</label>
               <input
                 type="text"
                 required
+                placeholder="Engineering, Design Sync, etc."
                 value={name}
                 onChange={e => setName(e.target.value)}
-                style={{
-                  width: '100%',
-                  padding: '8px 12px',
-                  borderRadius: '6px',
-                  border: '1px solid rgba(255,255,255,0.1)',
-                  background: 'rgba(255,255,255,0.03)',
-                  color: '#fff',
-                  outline: 'none'
-                }}
+                className="field__input"
               />
             </div>
-            <div>
-              <label style={{ color: '#94a3b8', fontSize: '12px', display: 'block', marginBottom: '4px' }}>Description</label>
+            
+            <div className="field">
+              <label className="field__label">Description</label>
               <textarea
+                placeholder="What is this workspace for?"
                 value={desc}
                 onChange={e => setDesc(e.target.value)}
                 rows={3}
+                className="field__input"
                 style={{
-                  width: '100%',
-                  padding: '8px 12px',
-                  borderRadius: '6px',
-                  border: '1px solid rgba(255,255,255,0.1)',
-                  background: 'rgba(255,255,255,0.03)',
-                  color: '#fff',
-                  outline: 'none',
-                  resize: 'none'
+                  resize: 'none',
+                  fontFamily: 'inherit'
                 }}
               />
             </div>
-            <Button size="small" variant="primary" type="submit">Create Team</Button>
+            
+            <Button size="small" variant="primary" type="submit" style={{ alignSelf: 'flex-start', marginTop: 4, padding: '10px 20px' }}>
+              Create Workspace ✨
+            </Button>
           </form>
         )}
 
         <div style={{
           display: 'grid',
           gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
-          gap: '20px'
+          gap: '24px'
         }}>
           {teams.map(team => (
             <TeamCard key={team._id} team={team} />
           ))}
           {teams.length === 0 && (
-            <p style={{ color: '#64748b', fontSize: '14px', fontStyle: 'italic' }}>
-              No team workspaces created yet. Get started by creating one!
-            </p>
+            <div className="card" style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '40px 20px', background: 'rgba(255,255,255,0.01)' }}>
+              <p style={{ color: 'var(--muted)', fontSize: '15px', fontStyle: 'italic', margin: 0 }}>
+                No active workspaces found. Create a team workspace above to get started!
+              </p>
+            </div>
           )}
         </div>
       </div>

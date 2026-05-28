@@ -568,26 +568,29 @@ export default function MeetingRoom() {
   });
 
   return (
-    <div className="room" style={{ padding: '20px' }}>
+    <div className="room" style={{ padding: '24px', minHeight: '100vh', background: 'var(--bg-darker)' }}>
       
       {/* Top Info Bar */}
       <div style={{
         display: 'flex',
         justifyContent: 'space-between',
         alignItems: 'center',
-        background: 'rgba(15, 23, 42, 0.6)',
-        border: '1px solid rgba(255, 255, 255, 0.08)',
-        borderRadius: '12px',
-        padding: '12px 24px',
-        marginBottom: '20px',
-        backdropFilter: 'blur(10px)'
+        background: 'var(--bg-card)',
+        border: '1px solid var(--glass-border)',
+        borderRadius: 'var(--radius)',
+        padding: '16px 28px',
+        marginBottom: '24px',
+        backdropFilter: 'blur(20px)',
+        WebkitBackdropFilter: 'blur(20px)',
+        boxShadow: 'var(--shadow-soft)'
       }}>
         <div>
-          <h2 style={{ color: '#fff', fontSize: '18px', margin: 0, fontFamily: 'Space Grotesk', fontWeight: 700 }}>
-            🟢 Meeting Room Active: {meeting?.title || 'Loading...'}
+          <h2 style={{ color: '#fff', fontSize: '18px', margin: 0, fontFamily: 'Space Grotesk', fontWeight: 700, display: 'flex', alignItems: 'center', gap: 8 }}>
+            <span style={{ color: 'var(--accent-2)', animation: 'pulse-glow 1.5s infinite' }}>🟢</span> 
+            Meeting Room Active: {meeting?.title || 'Loading...'}
           </h2>
-          <span style={{ color: '#94a3b8', fontSize: '12px' }}>
-            Meeting ID: <strong style={{ color: 'var(--color-accent-primary)' }}>{meetingId}</strong>
+          <span style={{ color: 'var(--muted)', fontSize: '12px', marginTop: 4, display: 'inline-block' }}>
+            Session Key: <strong style={{ color: 'var(--accent)', fontFamily: 'Space Grotesk' }}>{meetingId}</strong>
           </span>
         </div>
         <button
@@ -596,18 +599,27 @@ export default function MeetingRoom() {
             toast.success('Meeting ID copied to clipboard!');
           }}
           style={{
-            background: 'rgba(255, 255, 255, 0.06)',
-            border: '1px solid rgba(255, 255, 255, 0.1)',
+            background: 'rgba(255, 255, 255, 0.04)',
+            border: '1px solid rgba(255, 255, 255, 0.08)',
             color: '#fff',
-            padding: '6px 14px',
-            borderRadius: '8px',
-            fontSize: '12px',
+            padding: '8px 16px',
+            borderRadius: '10px',
+            fontSize: '13px',
             fontWeight: '600',
+            fontFamily: 'Space Grotesk, sans-serif',
             cursor: 'pointer',
-            transition: 'background 0.2s'
+            transition: 'all 0.25s cubic-bezier(0.16, 1, 0.3, 1)'
           }}
-          onMouseEnter={e => e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)'}
-          onMouseLeave={e => e.currentTarget.style.background = 'rgba(255, 255, 255, 0.06)'}
+          onMouseEnter={e => {
+            e.currentTarget.style.background = 'rgba(99, 102, 241, 0.15)';
+            e.currentTarget.style.borderColor = 'rgba(99, 102, 241, 0.35)';
+            e.currentTarget.style.boxShadow = '0 0 12px rgba(99, 102, 241, 0.2)';
+          }}
+          onMouseLeave={e => {
+            e.currentTarget.style.background = 'rgba(255, 255, 255, 0.04)';
+            e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.08)';
+            e.currentTarget.style.boxShadow = 'none';
+          }}
         >
           📋 Copy Meeting ID
         </button>

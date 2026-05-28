@@ -6,46 +6,63 @@ export default function ProjectCard({ project }) {
   const navigate = useNavigate();
 
   return (
-    <div className="glass" style={{
-      padding: '20px',
-      borderRadius: '12px',
-      cursor: 'pointer',
-      transition: 'transform 0.2s, box-shadow 0.2s',
-    }}
+    <div 
+      className="card" 
+      style={{
+        padding: '24px',
+        cursor: 'pointer',
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'space-between',
+        minHeight: 180,
+        background: 'linear-gradient(135deg, rgba(255,255,255,0.02) 0%, rgba(255,255,255,0.01) 100%)',
+        transition: 'all 0.3s cubic-bezier(0.16, 1, 0.3, 1)'
+      }}
       onClick={() => navigate(`/project-board/${project._id}`)}
       onMouseEnter={e => {
-        e.currentTarget.style.transform = 'translateY(-2px)';
-        e.currentTarget.style.boxShadow = '0 8px 24px rgba(59, 130, 246, 0.15)';
+        e.currentTarget.style.transform = 'translateY(-6px)'
+        e.currentTarget.style.borderColor = 'var(--accent)'
+        e.currentTarget.style.boxShadow = '0 20px 40px rgba(0,0,0,0.5), 0 0 20px rgba(99, 102, 241, 0.2)'
       }}
       onMouseLeave={e => {
-        e.currentTarget.style.transform = 'translateY(0)';
-        e.currentTarget.style.boxShadow = 'none';
+        e.currentTarget.style.transform = 'translateY(0)'
+        e.currentTarget.style.borderColor = 'var(--glass-border)'
+        e.currentTarget.style.boxShadow = 'var(--shadow-soft)'
       }}
     >
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-        <h4 style={{ color: '#fff', fontSize: '16px', fontWeight: '600', fontFamily: 'Space Grotesk', margin: 0 }}>
-          📁 {project.projectName}
-        </h4>
-        <span style={{
-          fontSize: '11px',
-          fontWeight: '600',
-          color: project.status === 'active' ? '#4ade80' : '#94a3b8',
-          background: project.status === 'active' ? 'rgba(74, 222, 128, 0.1)' : 'rgba(148, 163, 184, 0.1)',
-          padding: '2px 8px',
-          borderRadius: '4px',
-          textTransform: 'capitalize'
-        }}>
-          {project.status}
-        </span>
+      <div>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+          <h4 style={{ color: '#fff', fontSize: '18px', fontWeight: '700', fontFamily: 'Space Grotesk', margin: 0 }}>
+            📁 {project.projectName}
+          </h4>
+          <span style={{
+            fontSize: '11px',
+            fontWeight: '700',
+            color: project.status === 'active' ? 'var(--success)' : 'var(--muted)',
+            background: project.status === 'active' ? 'rgba(16, 185, 129, 0.12)' : 'rgba(148, 163, 184, 0.12)',
+            padding: '3px 10px',
+            borderRadius: '12px',
+            textTransform: 'uppercase',
+            letterSpacing: 0.5
+          }}>
+            {project.status || 'Active'}
+          </span>
+        </div>
+        <p style={{ color: 'var(--muted)', fontSize: '13px', margin: '4px 0 16px 0', lineHeight: '1.5' }}>
+          {project.description || 'Collaborative project board. Plan tasks, complete sprints, and track milestones.'}
+        </p>
       </div>
-      <p style={{ color: '#cbd5e1', fontSize: '13px', margin: '0 0 16px 0', lineHeight: '1.5' }}>
-        {project.description || 'No description provided.'}
-      </p>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <span style={{ fontSize: '11px', color: '#94a3b8' }}>
-          Members: {project.members?.length || 0}
+      <div style={{ 
+        display: 'flex', 
+        justifyContent: 'space-between', 
+        alignItems: 'center',
+        paddingTop: 14,
+        borderTop: '1px solid rgba(255,255,255,0.05)'
+      }}>
+        <span style={{ fontSize: '13px', color: '#cbd5e1', display: 'flex', alignItems: 'center', gap: 6 }}>
+          <span>👥</span> Members: <strong>{project.members?.length || 1}</strong>
         </span>
-        <span style={{ fontSize: '11px', color: 'var(--color-accent-primary)', fontWeight: '500' }}>
+        <span style={{ fontSize: '12px', color: 'var(--accent)', fontWeight: '600' }}>
           Open Board →
         </span>
       </div>
