@@ -51,6 +51,16 @@ export const initSocket = (server) => {
       io.to(targetSocketId).emit('request-unmute', { requesterName })
     })
 
+    // Relay participant mute/video state toggles to everyone in the room
+    socket.on('toggle-media', ({ meetingId, isMuted, isVideoOff }) => {
+      socket.to(meetingId).emit('participant-media-toggled', {
+        socketId: socket.id,
+        userId: socket.userId,
+        isMuted,
+        isVideoOff
+      })
+    })
+
     socket.on('leave-meeting', ({ meetingId, userId }) => {
       socket.leave(meetingId)
       socket.to(meetingId).emit('user-left', { userId, socketId: socket.id })

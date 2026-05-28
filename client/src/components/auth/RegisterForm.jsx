@@ -9,13 +9,15 @@ export default function RegisterForm() {
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [securityQuestion, setSecurityQuestion] = useState("What is your mother's name?")
+  const [securityAnswer, setSecurityAnswer] = useState('')
   const { register } = useAuth()
   const navigate = useNavigate()
 
   const handleSubmit = async (e) => {
     e.preventDefault()
     try {
-      await register(name, email, password)
+      await register(name, email, password, securityQuestion, securityAnswer)
       toast.success('Account created successfully!')
       navigate('/dashboard')
     } catch (error) {
@@ -69,6 +71,24 @@ export default function RegisterForm() {
           placeholder="Min. 6 characters"
           value={password} 
           onChange={(e) => setPassword(e.target.value)} 
+          required 
+        />
+        
+        <Input 
+          label="Security Question (for password recovery)" 
+          type="text" 
+          placeholder="e.g. What is your mother's name?"
+          value={securityQuestion} 
+          onChange={(e) => setSecurityQuestion(e.target.value)} 
+          required 
+        />
+
+        <Input 
+          label="Security Answer" 
+          type="text" 
+          placeholder="Type your security answer..."
+          value={securityAnswer} 
+          onChange={(e) => setSecurityAnswer(e.target.value)} 
           required 
         />
         

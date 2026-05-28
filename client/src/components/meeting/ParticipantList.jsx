@@ -132,6 +132,12 @@ export default function ParticipantList({ participants, isHost, onRequestUnmute 
                           border: '1px solid rgba(20, 184, 166, 0.2)'
                         }}>HOST</span>
                       )}
+                      {p.isMuted && (
+                        <span style={{ color: '#ef4444', fontSize: '11px', cursor: 'help' }} title="Microphone Muted">🔇</span>
+                      )}
+                      {p.isVideoOff && (
+                        <span style={{ color: '#f59e0b', fontSize: '11px', cursor: 'help' }} title="Camera Off">🚫📹</span>
+                      )}
                     </span>
                   </div>
 

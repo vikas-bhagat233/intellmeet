@@ -1,6 +1,14 @@
 import { useEffect, useRef, useState, useCallback } from 'react'
 
-export default function VideoPlayer({ stream, muted = false, username = 'You', isScreenShare = false, isLocal = false }) {
+export default function VideoPlayer({ 
+  stream, 
+  muted = false, 
+  username = 'You', 
+  isScreenShare = false, 
+  isLocal = false,
+  isMuted = false,
+  isVideoOff = false 
+}) {
   const videoRef = useRef()
   const containerRef = useRef()
   const [isFullscreen, setIsFullscreen] = useState(false)
@@ -97,17 +105,73 @@ export default function VideoPlayer({ stream, muted = false, username = 'You', i
       onMouseMove={handleMouseMove}
       onMouseLeave={() => setShowControls(false)}
     >
-      <video
-        ref={videoRef}
-        autoPlay
-        playsInline
-        muted={muted}
-        style={isFullscreen ? { width: '100%', height: '100%', objectFit: 'contain' } : {}}
-      />
+      {/* Video stream rendering off if camera disabled */}
+      {!isVideoOff ? (
+        <video
+          ref={videoRef}
+          autoPlay
+          playsInline
+          muted={muted}
+          style={isFullscreen ? { width: '100%', height: '100%', objectFit: 'contain' } : {}}
+        />
+      ) : (
+        <div style={{
+          position: 'absolute',
+          inset: 0,
+          background: '#0b0f19',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: 12,
+          zIndex: 2,
+          border: '1px solid rgba(255,255,255,0.03)',
+          borderRadius: 12
+        }}>
+          <div style={{
+            width: 60,
+            height: 60,
+            borderRadius: '50%',
+            background: 'var(--accent-gradient)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            fontSize: 22,
+            fontWeight: 700,
+            color: '#fff',
+            boxShadow: '0 8px 24px var(--accent-glow)',
+            animation: 'pulse-glow 2s infinite'
+          }}>
+            {username ? username.charAt(0).toUpperCase() : 'U'}
+          </div>
+          <span style={{ color: 'var(--muted)', fontSize: 11, fontWeight: 600, letterSpacing: '0.5px', textTransform: 'uppercase' }}>
+            Camera Disabled
+          </span>
+        </div>
+      )}
 
       {/* Username tag */}
-      <div className="video-tag">
+      <div className="video-tag" style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
         {username} {isScreen ? '🖥️' : ''}
+        {isMuted && (
+          <span 
+            style={{ 
+              color: '#ef4444', 
+              background: 'rgba(239, 68, 68, 0.12)', 
+              padding: '1px 5px', 
+              borderRadius: '4px',
+              border: '1px solid rgba(239, 68, 68, 0.2)',
+              fontSize: '10px',
+              fontWeight: 700,
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 2
+            }} 
+            title="Microphone Muted"
+          >
+            🔇 MUTED
+          </span>
+        )}
       </div>
 
       {/* Quick expand button always visible on screen-share tiles */}

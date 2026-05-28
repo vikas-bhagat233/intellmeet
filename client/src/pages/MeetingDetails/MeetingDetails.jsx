@@ -94,15 +94,50 @@ export default function MeetingDetails() {
           
           {/* Column 1: Video recording & details */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
-            {recording && (
-              <div className="card" style={{ padding: 20 }}>
-                <RecordingPlayer recordingUrl={recording.recordingUrl} />
-                <div style={{ marginTop: 14, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 10 }}>
-                  <RecordingList size={recording.size} duration={recording.duration} />
-                  <RecordingDownload url={recording.recordingUrl} />
+            <div className="card" style={{ padding: 20 }}>
+              <h3 style={{ color: '#fff', fontSize: 16, fontWeight: 600, fontFamily: 'Space Grotesk', marginBottom: 12, display: 'flex', alignItems: 'center', gap: 8 }}>
+                🎥 Session Recording
+              </h3>
+              {recording ? (
+                <>
+                  <RecordingPlayer recordingUrl={recording.recordingUrl} />
+                  <div style={{ marginTop: 14, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 10 }}>
+                    <RecordingList size={recording.size} duration={recording.duration} />
+                    <RecordingDownload url={recording.recordingUrl} />
+                  </div>
+                </>
+              ) : (
+                <div style={{
+                  padding: '40px 20px',
+                  textAlign: 'center',
+                  background: 'rgba(255, 255, 255, 0.02)',
+                  border: '1px dashed rgba(255, 255, 255, 0.1)',
+                  borderRadius: 12
+                }}>
+                  <span style={{ fontSize: 32, display: 'block', marginBottom: 12 }}>🚫</span>
+                  <span style={{ color: '#fff', fontWeight: 600, fontSize: 14, display: 'block' }}>No Video Recording Available</span>
+                  <p style={{ color: 'var(--muted)', fontSize: 12, marginTop: 4, marginBottom: 16 }}>
+                    This meeting session was not recorded.
+                  </p>
+                  <button
+                    disabled
+                    style={{
+                      background: 'rgba(255,255,255,0.04)',
+                      border: '1px solid rgba(255,255,255,0.06)',
+                      color: 'var(--muted)',
+                      padding: '8px 16px',
+                      borderRadius: '8px',
+                      fontSize: '12px',
+                      fontWeight: 600,
+                      cursor: 'not-allowed',
+                      width: '100%'
+                    }}
+                  >
+                    🔒 Watch Session Recording (Disabled)
+                  </button>
                 </div>
-              </div>
-            )}
+              )}
+            </div>
 
             {/* AI Summary Card */}
             <SummaryCard summaryText={insights?.summary?.summary} />

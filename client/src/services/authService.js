@@ -1,8 +1,8 @@
 import api from './api'
 
 export const authService = {
-  register: async (name, email, password) => {
-    const response = await api.post('/auth/register', { name, email, password })
+  register: async (name, email, password, securityQuestion, securityAnswer) => {
+    const response = await api.post('/auth/register', { name, email, password, securityQuestion, securityAnswer })
     const payload = response.data?.data
     if (payload?.token) localStorage.setItem('token', payload.token)
     return payload

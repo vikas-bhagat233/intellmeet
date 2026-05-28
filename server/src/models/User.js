@@ -7,7 +7,9 @@ const userSchema = new mongoose.Schema({
   password: { type: String, required: true },
   avatar: { type: String, default: '' },
   role: { type: String, enum: ['user', 'admin'], default: 'user' },
-  isActive: { type: Boolean, default: true }
+  isActive: { type: Boolean, default: true },
+  securityQuestion: { type: String, default: "What is your mother's name?" },
+  securityAnswer: { type: String, default: "mother" }
 }, { timestamps: true })
 
 userSchema.pre('save', async function(next) {

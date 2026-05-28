@@ -198,7 +198,7 @@ export default function MeetingRoom() {
         peersRef.current[targetId] = { peer, username };
         setPeers(prev => {
           const filtered = prev.filter(p => p.userId !== targetId && p.dbUserId !== userId);
-          return [...filtered, { peer, userId: targetId, dbUserId: userId, username, stream: null, isHost: false }];
+          return [...filtered, { peer, userId: targetId, dbUserId: userId, username, stream: null, isHost: false, isMuted: true, isVideoOff: true }];
         });
       };
 
@@ -223,7 +223,7 @@ export default function MeetingRoom() {
         const peerIsHost = hostId && callerDbId && hostId.toString() === callerDbId.toString();
         setPeers(prev => {
           const filtered = prev.filter(p => p.userId !== callerId && p.dbUserId !== callerDbId);
-          return [...filtered, { peer, userId: callerId, dbUserId: callerDbId, username, stream: null, isHost: !!peerIsHost }];
+          return [...filtered, { peer, userId: callerId, dbUserId: callerDbId, username, stream: null, isHost: !!peerIsHost, isMuted: true, isVideoOff: true }];
         });
       };
 
@@ -312,15 +312,25 @@ export default function MeetingRoom() {
         });
       };
 
+      const onParticipantMediaToggled = ({ socketId, isMuted, isVideoOff }) => {
+        setPeers(prev => prev.map(p => {
+          if (p.userId === socketId) {
+            return { ...p, isMuted, isVideoOff };
+          }
+          return p;
+        }));
+      };
+
       socket.on('host-screen-share', onHostScreenShare);
       socket.on('user-joined', onUserJoined);
       socket.on('receiving-signal', onReceivingSignal);
       socket.on('received-returned-signal', onReturnedSignal);
       socket.on('user-left', onUserLeft);
       socket.on('request-unmute', onRequestUnmute);
+      socket.on('participant-media-toggled', onParticipantMediaToggled);
 
       // Store handlers in ref so cleanup can remove EXACTLY these handlers
-      handlersRef.current = { onHostScreenShare, onUserJoined, onReceivingSignal, onReturnedSignal, onUserLeft, onRequestUnmute };
+      handlersRef.current = { onHostScreenShare, onUserJoined, onReceivingSignal, onReturnedSignal, onUserLeft, onRequestUnmute, onParticipantMediaToggled };
     };
 
     initMeetingMedia();
@@ -337,6 +347,7 @@ export default function MeetingRoom() {
         socket.off('received-returned-signal', h.onReturnedSignal);
         socket.off('user-left', h.onUserLeft);
         socket.off('request-unmute', h.onRequestUnmute);
+        socket.off('participant-media-toggled', h.onParticipantMediaToggled);
       }
       Object.values(peersRef.current).forEach(({ peer }) => { try { peer.destroy(); } catch (e) {} });
       peersRef.current = {};
@@ -462,10 +473,21 @@ export default function MeetingRoom() {
         toast.loading('🖥️ Please select the screen/tab you want to record...', { id: 'rec-init', duration: 3000 });
         
         // 1. Capture screen video and tab audio
-        const screenStream = await navigator.mediaDevices.getDisplayMedia({ 
-          video: { cursor: "always" }, 
-          audio: true 
-        });
+        let screenStream;
+        try {
+          screenStream = await navigator.mediaDevices.getDisplayMedia({ 
+            video: { cursor: "always" }, 
+            audio: true 
+          });
+        } catch (displayErr) {
+          console.warn("Complex displayMedia failed, falling back to simple video:", displayErr);
+          try {
+            screenStream = await navigator.mediaDevices.getDisplayMedia({ video: true });
+          } catch (mobileErr) {
+            console.error("Simple displayMedia failed too:", mobileErr);
+            throw mobileErr;
+          }
+        }
         
         // 2. Fetch mic stream to record voiceover
         let micTracks = [];
@@ -631,7 +653,9 @@ export default function MeetingRoom() {
     userId: localUserId,
     username: localUsername,
     online: true,
-    isHost: isHost
+    isHost: isHost,
+    isMuted: isMuted,
+    isVideoOff: isVideoOff
   });
   seenKeys.add(localKey);
 
@@ -645,7 +669,9 @@ export default function MeetingRoom() {
         userId: p.userId,
         username: p.username,
         online: true,
-        isHost: getIsUserHost(p.dbUserId, p.username)
+        isHost: getIsUserHost(p.dbUserId, p.username),
+        isMuted: p.isMuted !== undefined ? p.isMuted : true,
+        isVideoOff: p.isVideoOff !== undefined ? p.isVideoOff : true
       });
       seenKeys.add(key);
     }
@@ -711,7 +737,15 @@ export default function MeetingRoom() {
 
       <div className="room__grid">
         <div className="room__videos">
-          <VideoPlayer stream={stream} muted username={user?.name} isScreenShare={isScreenSharing} isLocal />
+          <VideoPlayer 
+            stream={stream} 
+            muted 
+            username={user?.name} 
+            isScreenShare={isScreenSharing} 
+            isLocal 
+            isMuted={isMuted} 
+            isVideoOff={isVideoOff} 
+          />
           {peers.map((peer) => (
             <VideoPlayer
               key={peer.userId}
@@ -720,6 +754,8 @@ export default function MeetingRoom() {
               // If the host is sharing, mark the host's tile as a screen share
               // so the CSS does not mirror it and the expand button appears
               isScreenShare={hostScreenSharing && peer.isHost}
+              isMuted={peer.isMuted !== undefined ? peer.isMuted : true}
+              isVideoOff={peer.isVideoOff !== undefined ? peer.isVideoOff : true}
             />
           ))}
         </div>
@@ -741,6 +777,7 @@ export default function MeetingRoom() {
             stream.getAudioTracks()[0].enabled = !muted;
           }
           setIsMuted(muted);
+          socket.emit('toggle-media', { meetingId, isMuted: muted, isVideoOff });
         }}
         isVideoOff={isVideoOff}
         setIsVideoOff={(off) => {
@@ -753,6 +790,7 @@ export default function MeetingRoom() {
             stream.getVideoTracks()[0].enabled = !off;
           }
           setIsVideoOff(off);
+          socket.emit('toggle-media', { meetingId, isMuted, isVideoOff: off });
         }}
         isHost={isHost}
         isRecording={isRecording}
